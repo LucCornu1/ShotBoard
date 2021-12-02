@@ -1,6 +1,11 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+## [0.0.2] - 02-11-2021 - LucC
+### Added
+- Création d'un 'Character' avec son Snowboard
+- Ajout des fonctions de déplacement, avec momentum
+
 ## [0.0.1] - 25-11-2021 - LucC
 ### Added
 - Création et ajout du projet à Github
