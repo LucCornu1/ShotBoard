@@ -34,15 +34,26 @@ public:
 // Variables
 private:
 	float ForwardMomentum;
+	FVector PreviousLocation;
+	float AngleSpeed;
+	bool bForward;
 
 protected:
-	/** The variable for the speed at which the character builds momentum */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|BaseMovement", meta = (ClampMin = "0", ClampMax = "1"))
-		float MomentumAlpha = 0.01;
-
 	/** The variable for the speed at which the character turns */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|BaseMovement", meta = (ClampMin = "0", ClampMax = "1"))
-		float TurnAlpha = 0.03;
+		float TurnAlpha = 0.04f;
+
+	/** The variable for the momentum */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|BaseMovement", meta = (ClampMin = "0", ClampMax = "1"))
+		float MomentumAlpha = 0.01f;
+
+	/** The curve that determine the speed corresponding to the slope */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Curves")
+		UCurveFloat* SpeedCurve;
+
+	/** The curve that determine the acceleration rate corresponding to the slope */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Curves")
+		UCurveFloat* AccelerationRateCurve;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Components")
@@ -59,10 +70,34 @@ public:
 private:
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Character Movement")
+		void IsForward();
+
+	UFUNCTION(BlueprintCallable, Category = "Character Movement")
+		void NotForward();
+
+	UFUNCTION(BlueprintCallable, Category = "Character Movement")
 		void MoveForward(float AxisValue);
 
 	UFUNCTION(BlueprintCallable, Category = "Character Movement")
 		void TurnRight(float AxisValue);
+
+	UFUNCTION(BlueprintCallable, Category = "Camera Movement")
+		void CameraTurn(float AxisValue);
+
+	UFUNCTION(BlueprintCallable, Category = "Camera Movement")
+		void CameraUp(float AxisValue);
+
+	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
+		bool CheckUpdateSpeed();
+
+	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
+		float GetAngleSpeed();
+
+	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
+		float GetAccelerationRate();
+
+	UFUNCTION(BlueprintCallable, Category = "Character Movement|Speed")
+		void UpdateSpeed(float NewSpeed, float NewAccelerationRate);
 
 public:
 

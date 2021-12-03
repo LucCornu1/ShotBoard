@@ -1,6 +1,14 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+## [0.0.3] - 03-11-2021 - LucC
+### Added
+- Ajout d'un mouvement de caméra libre autour du joueur
+- Ajout d'un ajustement de la vitesse maximale en fonction de la pente du terrain
+
+### Changed
+- Le joueur utilise désormais le momentum inhérent à Unreal
+
 ## [0.0.2] - 02-11-2021 - LucC
 ### Added
 - Création d'un 'Character' avec son Snowboard
