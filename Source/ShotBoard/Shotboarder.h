@@ -37,6 +37,7 @@ private:
 	FVector PreviousLocation;
 	float AngleSpeed;
 	bool bForward;
+	float PreviousSpeed;
 
 protected:
 	/** The variable for the speed at which the character turns */
@@ -65,18 +66,15 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Components")
 		UCameraComponent* CameraComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
+		float TurnBraking = 0.f;
+
 
 // Functions
 private:
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Character Movement")
-		void IsForward();
-
-	UFUNCTION(BlueprintCallable, Category = "Character Movement")
-		void NotForward();
-
-	UFUNCTION(BlueprintCallable, Category = "Character Movement")
-		void MoveForward(float AxisValue);
+		void MoveForward(/*float AxisValue*/);
 
 	UFUNCTION(BlueprintCallable, Category = "Character Movement")
 		void TurnRight(float AxisValue);
@@ -88,16 +86,22 @@ protected:
 		void CameraUp(float AxisValue);
 
 	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
-		bool CheckUpdateSpeed();
+		bool CheckUpdateSpeed() const;
 
 	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
-		float GetAngleSpeed();
+		float GetAngleSpeed(const FRotator Tilt) const;
 
 	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
-		float GetAccelerationRate();
+		float GetAccelerationRate(const FRotator Tilt) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Character Movement|Speed")
 		void UpdateSpeed(float NewSpeed, float NewAccelerationRate);
+
+	UFUNCTION(BlueprintCallable, Category = "Snowboard Movement|Alignement")
+		FVector LineTrace(FVector Start, FVector End);
+
+	UFUNCTION(BlueprintCallable, Category = "Snowboard Movement|Alignement")
+		FRotator AlignBoard();
 
 public:
 

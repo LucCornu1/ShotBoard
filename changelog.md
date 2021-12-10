@@ -1,6 +1,14 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+## [0.0.4] - 10-11-2021 - LucC
+### Added
+- Ajout de l'inclinaison de la planche en fonction du terrain
+
+### Changed
+- Changement complet du système de déplacement
+- Le joueur peut désormais partir en arrière si la planche se trouve dans le bon sens
+
 ## [0.0.3] - 03-11-2021 - LucC
 ### Added
 - Ajout d'un mouvement de caméra libre autour du joueur

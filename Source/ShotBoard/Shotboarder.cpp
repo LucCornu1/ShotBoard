@@ -1,6 +1,7 @@
 // Code by Luc Cornu & Gaëtan Piou.
 
 
+#include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Shotboarder.h"
@@ -30,6 +31,9 @@ AShotboarder::AShotboarder()
 void AShotboarder::BeginPlay()
 {
 	Super::BeginPlay();
+
+	PreviousLocation = GetActorLocation();
+
 }
 
 // Called every frame
@@ -37,11 +41,13 @@ void AShotboarder::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	FRotator GroundTilt = AlignBoard();
+
 	if (CheckUpdateSpeed())
 	{
-		UpdateSpeed(GetAngleSpeed(), GetAccelerationRate());
-		PreviousLocation = GetActorLocation();
+		UpdateSpeed(GetAngleSpeed(GroundTilt), GetAccelerationRate(GroundTilt));
 
+		PreviousLocation = GetActorLocation();
 	}
 
 }
@@ -51,10 +57,9 @@ void AShotboarder::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("Forward", IE_Pressed, this, &AShotboarder::IsForward);
-	PlayerInputComponent->BindAction("Forward", IE_Released, this, &AShotboarder::NotForward);
+	PlayerInputComponent->BindAction("Forward", IE_Pressed, this, &AShotboarder::MoveForward);
 
-	PlayerInputComponent->BindAxis("Forward", this, &AShotboarder::MoveForward);
+	// PlayerInputComponent->BindAxis("Forward", this, &AShotboarder::MoveForward);
 	PlayerInputComponent->BindAxis("Right", this, &AShotboarder::TurnRight);
 
 	PlayerInputComponent->BindAxis("Turn", this, &AShotboarder::CameraTurn);
@@ -64,23 +69,11 @@ void AShotboarder::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 
 // Added
-void AShotboarder::IsForward()
+void AShotboarder::MoveForward(/*float AxisValue*/)
 {
-	bForward = true;
+	GetCharacterMovement()->AddImpulse(SkateboardComponent->GetForwardVector() * 10000);
 
-}
-
-void AShotboarder::NotForward()
-{
-	bForward = false;
-
-}
-
-void AShotboarder::MoveForward(float AxisValue)
-{
-	// ForwardMomentum = FMath::Lerp(ForwardMomentum, AxisValue, MomentumAlpha);
-
-	AddMovementInput(SkateboardComponent->GetForwardVector(), /*ForwardMomentum*/AxisValue);
+	// AddMovementInput(SkateboardComponent->GetForwardVector(), /*ForwardMomentum*/AxisValue);
 	
 }
 
@@ -88,7 +81,8 @@ void AShotboarder::TurnRight(float AxisValue)
 {
 	// AxisValue != 0.f ? MA = 0 : MA = MomentumAlpha;
 
-	AddMovementInput(SkateboardComponent->GetRightVector(), AxisValue * TurnAlpha);
+	// (SkateboardComponent->GetRightVector(), AxisValue * TurnAlpha
+	AddActorLocalRotation(FRotator(0.f, 1.f, 0.f) * AxisValue /** TurnAlpha*/);
 
 }
 
@@ -104,31 +98,76 @@ void AShotboarder::CameraUp(float AxisValue)
 
 }
 
-bool AShotboarder::CheckUpdateSpeed()
+bool AShotboarder::CheckUpdateSpeed() const
 {
 	if (IsValid(SpeedCurve) && IsValid(AccelerationRateCurve))
 	{
-		return (/*(!GetCharacterMovement()->IsFalling()) &&*/ (GetCharacterMovement()->GetLastUpdateVelocity().Size() > 0));
+		return (GetCharacterMovement()->GetLastUpdateVelocity().Size() > 0);
 	}
 
 	return false;
 
 }
 
-float AShotboarder::GetAngleSpeed()
+float AShotboarder::GetAngleSpeed(const FRotator Tilt) const
 {
-	return SpeedCurve->GetFloatValue(UKismetMathLibrary::FindLookAtRotation(PreviousLocation, GetActorLocation()).Pitch);
+	return SpeedCurve->GetFloatValue(Tilt.Pitch);
 
 }
 
-float AShotboarder::GetAccelerationRate()
+float AShotboarder::GetAccelerationRate(const FRotator Tilt) const
 {
-	return AccelerationRateCurve->GetFloatValue(UKismetMathLibrary::FindLookAtRotation(PreviousLocation, GetActorLocation()).Pitch);
+	return AccelerationRateCurve->GetFloatValue(Tilt.Pitch);
 
 }
 
 void AShotboarder::UpdateSpeed(float NewSpeed, float NewAccelerationRate)
 {
-	GetCharacterMovement()->MaxWalkSpeed = FMath::FInterpTo(GetCharacterMovement()->MaxWalkSpeed, NewSpeed, GetWorld()->GetDeltaSeconds(), NewAccelerationRate);
+	NewSpeed = FMath::FInterpTo(PreviousSpeed, NewSpeed, GetWorld()->GetDeltaSeconds(), NewAccelerationRate);
+
+	if (NewSpeed < PreviousSpeed && NewSpeed < 0.2)
+	{
+		NewSpeed = 0.f;
+	}
+
+	FVector ForwardVector = (GetActorLocation() - PreviousLocation) /*FVector((GetActorLocation() - PreviousLocation).X, (GetActorLocation() - PreviousLocation).Y, 0.f)*/;
+	ForwardVector.Normalize();
+
+	AddMovementInput(SkateboardComponent->GetForwardVector(), NewSpeed);
+	PreviousSpeed = NewSpeed;
+
+}
+
+FVector AShotboarder::LineTrace(FVector Start, FVector End)
+{
+	FHitResult OutHit;
+	FCollisionQueryParams Params;
+
+	// DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f);
+	// if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("%s"), bHit ? TEXT("true") : TEXT("false"))); }
+
+	if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params) && OutHit.Actor != this)
+	{
+		// if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("true"))); }
+		return OutHit.Location;
+	}
+
+	return End;
+
+}
+
+FRotator AShotboarder::AlignBoard()
+{
+	FVector Start = GetActorLocation() - GetActorRotation().Vector() * 70 + FVector(0.f, 0.f, -60.f);
+	FVector End = Start + FVector(0.f, 0.f, -70.f);
+	FVector BackHit = LineTrace(Start, End);
+
+	Start = GetActorLocation() + GetActorRotation().Vector() * 70 + FVector(0.f, 0.f, -60.f);
+	End = Start + FVector(0.f, 0.f, -70.f);
+	FVector FrontHit = LineTrace(Start, End);
+
+	FRotator Tilt = UKismetMathLibrary::FindLookAtRotation(BackHit, FrontHit);
+	SkateboardComponent->SetWorldRotation(Tilt);
+	return Tilt;
 
 }
