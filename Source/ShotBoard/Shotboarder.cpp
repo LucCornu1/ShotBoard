@@ -45,7 +45,7 @@ void AShotboarder::Tick(float DeltaTime)
 
 	if (CheckUpdateSpeed())
 	{
-		UpdateSpeed(GetAngleSpeed(GroundTilt), GetAccelerationRate(GroundTilt));
+		UpdateSpeed(GetAngleSpeed(GroundTilt), GetAccelerationRate(GroundTilt), GroundTilt);
 
 		PreviousLocation = GetActorLocation();
 	}
@@ -82,7 +82,7 @@ void AShotboarder::TurnRight(float AxisValue)
 	// AxisValue != 0.f ? MA = 0 : MA = MomentumAlpha;
 
 	// (SkateboardComponent->GetRightVector(), AxisValue * TurnAlpha
-	AddActorLocalRotation(FRotator(0.f, 1.f, 0.f) * AxisValue /** TurnAlpha*/);
+	AddActorLocalRotation(FRotator(0.f, 10.f, 0.f) * AxisValue * TurnAlpha);
 
 }
 
@@ -121,11 +121,11 @@ float AShotboarder::GetAccelerationRate(const FRotator Tilt) const
 
 }
 
-void AShotboarder::UpdateSpeed(float NewSpeed, float NewAccelerationRate)
+void AShotboarder::UpdateSpeed(float NewSpeed, float NewAccelerationRate, const FRotator Tilt)
 {
 	NewSpeed = FMath::FInterpTo(PreviousSpeed, NewSpeed, GetWorld()->GetDeltaSeconds(), NewAccelerationRate);
 
-	if (NewSpeed < PreviousSpeed && NewSpeed < 0.2)
+	if (NewSpeed < PreviousSpeed && NewSpeed < 0.2 && Tilt == FRotator(0.f, 0.f, 0.f))
 	{
 		NewSpeed = 0.f;
 	}

@@ -95,7 +95,7 @@ protected:
 		float GetAccelerationRate(const FRotator Tilt) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Character Movement|Speed")
-		void UpdateSpeed(float NewSpeed, float NewAccelerationRate);
+		void UpdateSpeed(float NewSpeed, float NewAccelerationRate, const FRotator Tilt);
 
 	UFUNCTION(BlueprintCallable, Category = "Snowboard Movement|Alignement")
 		FVector LineTrace(FVector Start, FVector End);
