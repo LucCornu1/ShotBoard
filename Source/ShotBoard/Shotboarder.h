@@ -42,7 +42,7 @@ private:
 protected:
 	/** The variable for the speed at which the character turns */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|BaseMovement", meta = (ClampMin = "0", ClampMax = "1"))
-		float TurnAlpha = 0.04f;
+		float TurnAlpha = 0.5f;
 
 	/** The variable for the momentum */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|BaseMovement", meta = (ClampMin = "0", ClampMax = "1"))
@@ -58,7 +58,7 @@ protected:
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Components")
-		UStaticMeshComponent* SkateboardComponent;
+		UStaticMeshComponent* SnowboardComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Components")
 		USpringArmComponent* SpringArmComponent;
@@ -66,8 +66,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Components")
 		UCameraComponent* CameraComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
-		float TurnBraking = 0.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
+		bool bShowDebugLines = false;
 
 
 // Functions
