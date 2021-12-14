@@ -86,13 +86,13 @@ protected:
 		void CameraUp(float AxisValue);
 
 	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
-		bool CheckUpdateSpeed() const;
+		bool CheckUpdateSpeed(float BoardTilt) const;
 
 	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
-		float GetAngleSpeed(const FRotator Tilt) const;
+		float GetAngleSpeed(const float Tilt) const;
 
 	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
-		float GetAccelerationRate(const FRotator Tilt) const;
+		float GetAccelerationRate(const float Tilt) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Character Movement|Speed")
 		void UpdateSpeed(float NewSpeed, float NewAccelerationRate, const FRotator Tilt);
@@ -102,6 +102,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Snowboard Movement|Alignement")
 		FRotator AlignBoard();
+
+	UFUNCTION(BlueprintCallable, Category = "Camera Movement")
+		void AlignCamera();
 
 public:
 

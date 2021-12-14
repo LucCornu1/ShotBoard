@@ -42,11 +42,13 @@ void AShotboarder::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	FRotator GroundTilt = AlignBoard();
-	if (CheckUpdateSpeed())
+	// if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Tilt : %f"), GroundTilt.Pitch)); }
+	// if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("X : %f; Y : %f"), GetVelocity().X, GetVelocity().Y)); }
+	if (CheckUpdateSpeed(GroundTilt.Pitch))
 	{
-		UpdateSpeed(GetAngleSpeed(GroundTilt), GetAccelerationRate(GroundTilt), GroundTilt);
-
+		UpdateSpeed(GetAngleSpeed(GroundTilt.Pitch), GetAccelerationRate(GroundTilt.Pitch), GroundTilt);
 		PreviousLocation = GetActorLocation();
+		AlignCamera();
 	}
 
 }
@@ -98,26 +100,26 @@ void AShotboarder::CameraUp(float AxisValue)
 
 }
 
-bool AShotboarder::CheckUpdateSpeed() const
+bool AShotboarder::CheckUpdateSpeed(float BoardTilt) const
 {
 	if (IsValid(SpeedCurve) && IsValid(AccelerationRateCurve))
 	{
-		return (GetCharacterMovement()->GetLastUpdateVelocity().Size() > 0);
-	}
+		return (BoardTilt != 0.f);
+	}	
 
 	return false;
 
 }
 
-float AShotboarder::GetAngleSpeed(const FRotator Tilt) const
+float AShotboarder::GetAngleSpeed(const float Tilt) const
 {
-	return SpeedCurve->GetFloatValue(Tilt.Pitch);
+	return SpeedCurve->GetFloatValue(Tilt);
 
 }
 
-float AShotboarder::GetAccelerationRate(const FRotator Tilt) const
+float AShotboarder::GetAccelerationRate(const float Tilt) const
 {
-	return AccelerationRateCurve->GetFloatValue(Tilt.Pitch);
+	return AccelerationRateCurve->GetFloatValue(Tilt);
 
 }
 
@@ -173,7 +175,19 @@ FRotator AShotboarder::AlignBoard()
 	FVector FrontHit = LineTrace(Start, End);
 
 	FRotator Tilt = UKismetMathLibrary::FindLookAtRotation(BackHit, FrontHit);
-	SnowboardComponent->SetWorldRotation(FMath::Lerp(SnowboardComponent->GetComponentRotation(), Tilt, 0.2f));
+	SnowboardComponent->SetWorldRotation(FMath::Lerp(SnowboardComponent->GetComponentRotation(), Tilt, 0.4f));
 	return Tilt;
+
+}
+
+void AShotboarder::AlignCamera()
+{
+	/*FVector Velocity = GetVelocity();
+	if (Velocity.Size() > 0.f)
+	{
+		Velocity *= -1;
+	}
+
+	SpringArmComponent->SetRelativeRotation(GetVelocity().Rotation());*/
 
 }
