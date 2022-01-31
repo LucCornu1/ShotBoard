@@ -1,6 +1,13 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.0.6] - 31-01-2022 - LucC
+### Added
+- Ajout du saut lorsque le joueur prend une rampe
+
+### Changed
+- Optimisation du déplacement du joueur
+
 ##[0.0.5] - 14-12-2021 - LucC
 ### Added
 - Ajout des contrôles manettes
