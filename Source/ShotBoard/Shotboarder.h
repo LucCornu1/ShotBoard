@@ -40,6 +40,7 @@ private:
 	bool bForward;
 	float ForwardMomentum;
 	float PreviousSpeed;
+	FVector DirectionMomentum;
 	float AirMomentum;
 
 protected:

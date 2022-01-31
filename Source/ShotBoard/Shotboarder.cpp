@@ -118,8 +118,11 @@ void AShotboarder::UpdateSpeed(float NewSpeed, float NewAccelerationRate, const 
 {
 	if (IsFlying())
 	{
-		AddMovementInput(GetActorForwardVector(), AirMomentum, true);
-		AddMovementInput(FVector(0.f, 0.f, -1.f), 10.f, true);
+		AddMovementInput(DirectionMomentum, AirMomentum, true);
+		// AddMovementInput(FVector(0.f, 0.f, -1.f), 10.f, true);
+
+		DirectionMomentum -= FVector(0.f, 0.f, GetWorld()->GetDeltaSeconds());
+		DirectionMomentum.Normalize(1.f);
 	}
 	else {
 		NewSpeed = FMath::FInterpTo(PreviousSpeed, NewSpeed, GetWorld()->GetDeltaSeconds(), NewAccelerationRate);
@@ -181,6 +184,8 @@ void AShotboarder::CheckGround()
 		if (!GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params))
 		{
 			GetCharacterMovement()->MovementMode = MOVE_Flying;
+			DirectionMomentum = GetVelocity();
+			DirectionMomentum.Normalize(1.f);
 			AirMomentum = GetVelocity().Size();
 		}
 	}
