@@ -3,8 +3,10 @@
 
 #pragma once
 
+#include "Components/ArrowComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Shotboarder.generated.h"
@@ -33,11 +35,12 @@ public:
 
 // Variables
 private:
-	float ForwardMomentum;
-	FVector PreviousLocation;
 	float AngleSpeed;
+	UArrowComponent* ArrowComponent = GetArrowComponent();
 	bool bForward;
+	float ForwardMomentum;
 	float PreviousSpeed;
+	float AirMomentum;
 
 protected:
 	/** The variable for the speed at which the character turns */
@@ -97,15 +100,14 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Character Movement|Speed")
 		void UpdateSpeed(float NewSpeed, float NewAccelerationRate, const FRotator Tilt);
 
-	UFUNCTION(BlueprintCallable, Category = "Snowboard Movement|Alignement")
-		FVector LineTrace(FVector Start, FVector End);
-
-	UFUNCTION(BlueprintCallable, Category = "Snowboard Movement|Alignement")
+	UFUNCTION(BlueprintCallable, Category = "Snowboard|Alignement")
 		FRotator AlignBoard();
 
-	UFUNCTION(BlueprintCallable, Category = "Camera Movement")
-		void AlignCamera();
+	UFUNCTION(BlueprintCallable, Category = "Snowboard|Alignements")
+		void CheckGround();
 
 public:
+	UFUNCTION(BlueprintPure, Category = "Character Movement|Movement Mode")
+		bool IsFlying() const { return GetCharacterMovement()->MovementMode == MOVE_Flying; }
 
 };

@@ -3,7 +3,6 @@
 
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Shotboarder.h"
 
 // Sets default values
@@ -32,8 +31,6 @@ void AShotboarder::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PreviousLocation = GetActorLocation();
-
 }
 
 // Called every frame
@@ -42,13 +39,10 @@ void AShotboarder::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	FRotator GroundTilt = AlignBoard();
-	// if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Tilt : %f"), GroundTilt.Pitch)); }
-	// if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, FString::Printf(TEXT("X : %f; Y : %f"), GetVelocity().X, GetVelocity().Y)); }
-	if (CheckUpdateSpeed(GroundTilt.Pitch))
+	if (CheckUpdateSpeed(GroundTilt.Pitch) || IsFlying())
 	{
 		UpdateSpeed(GetAngleSpeed(GroundTilt.Pitch), GetAccelerationRate(GroundTilt.Pitch), GroundTilt);
-		PreviousLocation = GetActorLocation();
-		AlignCamera();
+		CheckGround();
 	}
 
 }
@@ -72,7 +66,7 @@ void AShotboarder::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 // Added
 void AShotboarder::MoveForward(/*float AxisValue*/)
 {
-	GetCharacterMovement()->AddImpulse(SnowboardComponent->GetForwardVector() * 10000);
+	// GetCharacterMovement()->AddImpulse(SnowboardComponent->GetForwardVector() * 10000);
 
 	// AddMovementInput(SnowboardComponent->GetForwardVector(), /*ForwardMomentum*/AxisValue);
 	
@@ -80,23 +74,20 @@ void AShotboarder::MoveForward(/*float AxisValue*/)
 
 void AShotboarder::TurnRight(float AxisValue)
 {
-	if (GetVelocity().Size() > 1)
-	{
-		AddActorLocalRotation(FRotator(0.f, 1000.f, 0.f) * AxisValue * TurnAlpha * GetWorld()->GetDeltaSeconds());
-	}
+	AddActorLocalRotation(FRotator(0.f, 1000.f, 0.f) * AxisValue * TurnAlpha * GetWorld()->GetDeltaSeconds());
 
 }
 
 void AShotboarder::CameraTurn(float AxisValue)
 {
-	AddActorLocalRotation(FRotator(0.f, 1000.f, 0.f) * AxisValue * TurnAlpha * GetWorld()->GetDeltaSeconds());
-	// AddControllerYawInput(AxisValue);
+	// AddActorLocalRotation(FRotator(0.f, 1000.f, 0.f) * AxisValue * TurnAlpha * GetWorld()->GetDeltaSeconds());
+	AddControllerYawInput(AxisValue);
 
 }
 
 void AShotboarder::CameraUp(float AxisValue)
 {
-	// AddControllerPitchInput(AxisValue);
+	AddControllerPitchInput(AxisValue);
 
 }
 
@@ -105,7 +96,7 @@ bool AShotboarder::CheckUpdateSpeed(float BoardTilt) const
 	if (IsValid(SpeedCurve) && IsValid(AccelerationRateCurve))
 	{
 		return (BoardTilt != 0.f);
-	}	
+	}
 
 	return false;
 
@@ -125,69 +116,79 @@ float AShotboarder::GetAccelerationRate(const float Tilt) const
 
 void AShotboarder::UpdateSpeed(float NewSpeed, float NewAccelerationRate, const FRotator Tilt)
 {
-	if (GetCharacterMovement()->IsFalling())
+	if (IsFlying())
 	{
-		NewAccelerationRate = 0.f;
+		AddMovementInput(GetActorForwardVector(), AirMomentum, true);
+		AddMovementInput(FVector(0.f, 0.f, -1.f), 10.f, true);
 	}
+	else {
+		NewSpeed = FMath::FInterpTo(PreviousSpeed, NewSpeed, GetWorld()->GetDeltaSeconds(), NewAccelerationRate);
+		bool bTilt = Tilt == FRotator(0.f, 0.f, 0.f);
 
-	NewSpeed = FMath::FInterpTo(PreviousSpeed, NewSpeed, GetWorld()->GetDeltaSeconds(), NewAccelerationRate);
-	bool bTilt = Tilt == FRotator(0.f, 0.f, 0.f);
-	/*if (NewSpeed < PreviousSpeed && NewSpeed < 0.2 && bTilt)
-	{
-		NewSpeed = 0.f;
-
-		/*if (!bTilt)
-		{
-			NewSpeed = 0.0001f;
-		}
-	}*/
-
-	AddMovementInput(SnowboardComponent->GetForwardVector(), NewSpeed, true);
-	PreviousSpeed = NewSpeed;
-
-}
-
-FVector AShotboarder::LineTrace(FVector Start, FVector End)
-{
-	FHitResult OutHit;
-	FCollisionQueryParams Params;
-
-	if (bShowDebugLines) { DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f); }
-
-	if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params) && OutHit.Actor != this)
-	{
-		// if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("true"))); }
-		return OutHit.Location;
+		AddMovementInput(GetActorForwardVector(), NewSpeed, true);
+		PreviousSpeed = NewSpeed;
 	}
-
-	return End;
 
 }
 
 FRotator AShotboarder::AlignBoard()
 {
-	FVector Start = GetActorLocation() - GetActorRotation().Vector() * 70 + FVector(0.f, 0.f, -50.f);
-	FVector End = Start + FVector(0.f, 0.f, -80.f);
-	FVector BackHit = LineTrace(Start, End);
+	FVector Start = ArrowComponent->GetComponentLocation();
+	FVector End = UKismetMathLibrary::TransformLocation(GetActorTransform(),FVector(0.f, 0.f, -150.f));
+	FHitResult OutHit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	FRotator Tilt = FRotator(0.f, 0.f, 0.f);
 
-	Start = GetActorLocation() + GetActorRotation().Vector() * 70 + FVector(0.f, 0.f, -50.f);
-	End = Start + FVector(0.f, 0.f, -80.f);
-	FVector FrontHit = LineTrace(Start, End);
+	if (bShowDebugLines) { DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f); }
+	if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params))
+	{
+		FVector UpVector = GetRootComponent()->GetUpVector();
+		FVector NormalVector = OutHit.ImpactNormal;
 
-	FRotator Tilt = UKismetMathLibrary::FindLookAtRotation(BackHit, FrontHit);
-	SnowboardComponent->SetWorldRotation(FMath::Lerp(SnowboardComponent->GetComponentRotation(), Tilt, 0.4f));
+		FVector RotationAxis = FVector::CrossProduct(UpVector, NormalVector);
+		RotationAxis.Normalize();
+
+		float DotProduct = FVector::DotProduct(UpVector, NormalVector);
+		float RotationAngle = acosf(DotProduct);
+
+		FQuat Quat = FQuat(RotationAxis, RotationAngle);
+		FQuat RootQuat = GetRootComponent()->GetComponentQuat();
+
+		FQuat NewQuat = Quat * RootQuat;
+		Tilt = NewQuat.Rotator();
+
+		Tilt = FMath::RInterpTo(GetRootComponent()->GetComponentRotation(), Tilt, GetWorld()->GetDeltaSeconds(), 15.f);
+
+		GetRootComponent()->SetWorldRotation(Tilt);
+	}
+
 	return Tilt;
 
 }
 
-void AShotboarder::AlignCamera()
+void AShotboarder::CheckGround()
 {
-	/*FVector Velocity = GetVelocity();
-	if (Velocity.Size() > 0.f)
+	FVector Start = ArrowComponent->GetComponentLocation();
+	FVector End = UKismetMathLibrary::TransformLocation(GetActorTransform(), FVector(125.f, 0.f, -125.f));
+	FHitResult OutHit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	if (bShowDebugLines) { DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f); }
+	if (!IsFlying())
 	{
-		Velocity *= -1;
+		if (!GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params))
+		{
+			GetCharacterMovement()->MovementMode = MOVE_Flying;
+			AirMomentum = GetVelocity().Size();
+		}
 	}
-
-	SpringArmComponent->SetRelativeRotation(GetVelocity().Rotation());*/
-
+	else {
+		if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params))
+		{
+			GetCharacterMovement()->MovementMode = MOVE_Walking;
+		}
+	}
+	
 }
