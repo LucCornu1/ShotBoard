@@ -3,7 +3,6 @@
 
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Shotboarder.h"
 
 // Sets default values
@@ -15,9 +14,9 @@ AShotboarder::AShotboarder()
 	bReplicates = true;
 	SetReplicates(true);
 	SetReplicateMovement(true);
-
-	SkateboardComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SnowboardMesh"));
-	SkateboardComponent->SetupAttachment(RootComponent);
+	
+	SnowboardComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SnowboardMesh"));
+	SnowboardComponent->SetupAttachment(RootComponent);
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -32,8 +31,6 @@ void AShotboarder::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PreviousLocation = GetActorLocation();
-
 }
 
 // Called every frame
@@ -42,12 +39,10 @@ void AShotboarder::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	FRotator GroundTilt = AlignBoard();
-
-	if (CheckUpdateSpeed())
+	if (CheckUpdateSpeed(GroundTilt.Pitch) || IsFlying())
 	{
-		UpdateSpeed(GetAngleSpeed(GroundTilt), GetAccelerationRate(GroundTilt));
-
-		PreviousLocation = GetActorLocation();
+		UpdateSpeed(GetAngleSpeed(GroundTilt.Pitch), GetAccelerationRate(GroundTilt.Pitch), GroundTilt);
+		CheckGround();
 	}
 
 }
@@ -57,11 +52,8 @@ void AShotboarder::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("Forward", IE_Pressed, this, &AShotboarder::MoveForward);
-
-	// PlayerInputComponent->BindAxis("Forward", this, &AShotboarder::MoveForward);
+	PlayerInputComponent->BindAxis("Forward", this, &AShotboarder::MoveForward);
 	PlayerInputComponent->BindAxis("Right", this, &AShotboarder::TurnRight);
-
 	PlayerInputComponent->BindAxis("Turn", this, &AShotboarder::CameraTurn);
 	PlayerInputComponent->BindAxis("LookUp", this, &AShotboarder::CameraUp);
 
@@ -69,25 +61,27 @@ void AShotboarder::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 
 // Added
-void AShotboarder::MoveForward(/*float AxisValue*/)
+void AShotboarder::MoveForward(float AxisValue)
 {
-	GetCharacterMovement()->AddImpulse(SkateboardComponent->GetForwardVector() * 10000);
-
-	// AddMovementInput(SkateboardComponent->GetForwardVector(), /*ForwardMomentum*/AxisValue);
+	if (AxisValue > 0)
+	{
+		Crouch(true);
+	}
+	else {
+		UnCrouch(true);
+	}
 	
 }
 
 void AShotboarder::TurnRight(float AxisValue)
 {
-	// AxisValue != 0.f ? MA = 0 : MA = MomentumAlpha;
-
-	// (SkateboardComponent->GetRightVector(), AxisValue * TurnAlpha
-	AddActorLocalRotation(FRotator(0.f, 1.f, 0.f) * AxisValue /** TurnAlpha*/);
+	AddActorLocalRotation(FRotator(0.f, 1000.f, 0.f) * AxisValue * TurnAlpha * GetWorld()->GetDeltaSeconds());
 
 }
 
 void AShotboarder::CameraTurn(float AxisValue)
 {
+	// AddActorLocalRotation(FRotator(0.f, 1000.f, 0.f) * AxisValue * TurnAlpha * GetWorld()->GetDeltaSeconds());
 	AddControllerYawInput(AxisValue);
 
 }
@@ -98,76 +92,109 @@ void AShotboarder::CameraUp(float AxisValue)
 
 }
 
-bool AShotboarder::CheckUpdateSpeed() const
+bool AShotboarder::CheckUpdateSpeed(float BoardTilt) const
 {
 	if (IsValid(SpeedCurve) && IsValid(AccelerationRateCurve))
 	{
-		return (GetCharacterMovement()->GetLastUpdateVelocity().Size() > 0);
+		return (BoardTilt != 0.f);
 	}
 
 	return false;
 
 }
 
-float AShotboarder::GetAngleSpeed(const FRotator Tilt) const
+float AShotboarder::GetAngleSpeed(const float Tilt) const
 {
-	return SpeedCurve->GetFloatValue(Tilt.Pitch);
+	return SpeedCurve->GetFloatValue(Tilt);
 
 }
 
-float AShotboarder::GetAccelerationRate(const FRotator Tilt) const
+float AShotboarder::GetAccelerationRate(const float Tilt) const
 {
-	return AccelerationRateCurve->GetFloatValue(Tilt.Pitch);
+	return AccelerationRateCurve->GetFloatValue(Tilt);
 
 }
 
-void AShotboarder::UpdateSpeed(float NewSpeed, float NewAccelerationRate)
+void AShotboarder::UpdateSpeed(float NewSpeed, float NewAccelerationRate, const FRotator Tilt)
 {
-	NewSpeed = FMath::FInterpTo(PreviousSpeed, NewSpeed, GetWorld()->GetDeltaSeconds(), NewAccelerationRate);
-
-	if (NewSpeed < PreviousSpeed && NewSpeed < 0.2)
+	if (IsFlying())
 	{
-		NewSpeed = 0.f;
+		AddMovementInput(DirectionMomentum, AirMomentum, false);
+		// AddMovementInput(FVector(0.f, 0.f, -1.f), 10.f, true);
+
+		DirectionMomentum -= FVector(0.f, 0.f, GetWorld()->GetDeltaSeconds());
+		DirectionMomentum.Normalize(1.f);
 	}
+	else {
+		NewSpeed = FMath::FInterpTo(PreviousSpeed, NewSpeed, GetWorld()->GetDeltaSeconds(), NewAccelerationRate);
+		bool bTilt = Tilt == FRotator(0.f, 0.f, 0.f);
 
-	FVector ForwardVector = (GetActorLocation() - PreviousLocation) /*FVector((GetActorLocation() - PreviousLocation).X, (GetActorLocation() - PreviousLocation).Y, 0.f)*/;
-	ForwardVector.Normalize();
-
-	AddMovementInput(SkateboardComponent->GetForwardVector(), NewSpeed);
-	PreviousSpeed = NewSpeed;
-
-}
-
-FVector AShotboarder::LineTrace(FVector Start, FVector End)
-{
-	FHitResult OutHit;
-	FCollisionQueryParams Params;
-
-	// DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f);
-	// if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("%s"), bHit ? TEXT("true") : TEXT("false"))); }
-
-	if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params) && OutHit.Actor != this)
-	{
-		// if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("true"))); }
-		return OutHit.Location;
+		AddMovementInput(GetActorForwardVector(), NewSpeed, true);
+		PreviousSpeed = NewSpeed;
 	}
-
-	return End;
 
 }
 
 FRotator AShotboarder::AlignBoard()
 {
-	FVector Start = GetActorLocation() - GetActorRotation().Vector() * 70 + FVector(0.f, 0.f, -60.f);
-	FVector End = Start + FVector(0.f, 0.f, -70.f);
-	FVector BackHit = LineTrace(Start, End);
+	FVector Start = ArrowComponent->GetComponentLocation();
+	FVector End = UKismetMathLibrary::TransformLocation(GetActorTransform(),FVector(0.f, 0.f, -150.f));
+	FHitResult OutHit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	FRotator Tilt = FRotator(0.f, 0.f, 0.f);
 
-	Start = GetActorLocation() + GetActorRotation().Vector() * 70 + FVector(0.f, 0.f, -60.f);
-	End = Start + FVector(0.f, 0.f, -70.f);
-	FVector FrontHit = LineTrace(Start, End);
+	if (bShowDebugLines) { DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f); }
+	if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params))
+	{
+		FVector UpVector = GetRootComponent()->GetUpVector();
+		FVector NormalVector = OutHit.ImpactNormal;
 
-	FRotator Tilt = UKismetMathLibrary::FindLookAtRotation(BackHit, FrontHit);
-	SkateboardComponent->SetWorldRotation(Tilt);
+		FVector RotationAxis = FVector::CrossProduct(UpVector, NormalVector);
+		RotationAxis.Normalize();
+
+		float DotProduct = FVector::DotProduct(UpVector, NormalVector);
+		float RotationAngle = acosf(DotProduct);
+
+		FQuat Quat = FQuat(RotationAxis, RotationAngle);
+		FQuat RootQuat = GetRootComponent()->GetComponentQuat();
+
+		FQuat NewQuat = Quat * RootQuat;
+		Tilt = NewQuat.Rotator();
+
+		Tilt = FMath::RInterpTo(GetRootComponent()->GetComponentRotation(), Tilt, GetWorld()->GetDeltaSeconds(), 15.f);
+
+		GetRootComponent()->SetWorldRotation(Tilt);
+	}
+
 	return Tilt;
 
+}
+
+void AShotboarder::CheckGround()
+{
+	FVector Start = ArrowComponent->GetComponentLocation();
+	FVector End = UKismetMathLibrary::TransformLocation(GetActorTransform(), FVector(125.f, 0.f, -125.f));
+	FHitResult OutHit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	if (bShowDebugLines) { DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f); }
+	if (!IsFlying())
+	{
+		if (!GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params))
+		{
+			GetCharacterMovement()->MovementMode = MOVE_Flying;
+			DirectionMomentum = GetVelocity();
+			DirectionMomentum.Normalize(1.f);
+			AirMomentum = GetVelocity().Size();
+		}
+	}
+	else {
+		if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params))
+		{
+			GetCharacterMovement()->MovementMode = MOVE_Walking;
+		}
+	}
+	
 }

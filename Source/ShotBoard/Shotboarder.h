@@ -3,8 +3,10 @@
 
 #pragma once
 
+#include "Components/ArrowComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Shotboarder.generated.h"
@@ -33,16 +35,19 @@ public:
 
 // Variables
 private:
-	float ForwardMomentum;
-	FVector PreviousLocation;
+	float AirMomentum;
 	float AngleSpeed;
+	UArrowComponent* ArrowComponent = GetArrowComponent();
+	// bool bCrouched;
 	bool bForward;
+	FVector DirectionMomentum;
+	float ForwardMomentum;
 	float PreviousSpeed;
 
 protected:
 	/** The variable for the speed at which the character turns */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|BaseMovement", meta = (ClampMin = "0", ClampMax = "1"))
-		float TurnAlpha = 0.04f;
+		float TurnAlpha = 0.5f;
 
 	/** The variable for the momentum */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|BaseMovement", meta = (ClampMin = "0", ClampMax = "1"))
@@ -58,7 +63,7 @@ protected:
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Components")
-		UStaticMeshComponent* SkateboardComponent;
+		UStaticMeshComponent* SnowboardComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Components")
 		USpringArmComponent* SpringArmComponent;
@@ -66,15 +71,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Components")
 		UCameraComponent* CameraComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
-		float TurnBraking = 0.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
+		bool bShowDebugLines = false;
 
 
 // Functions
 private:
+
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Character Movement")
-		void MoveForward(/*float AxisValue*/);
+		void MoveForward(float AxisValue);
 
 	UFUNCTION(BlueprintCallable, Category = "Character Movement")
 		void TurnRight(float AxisValue);
@@ -86,23 +92,25 @@ protected:
 		void CameraUp(float AxisValue);
 
 	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
-		bool CheckUpdateSpeed() const;
+		bool CheckUpdateSpeed(float BoardTilt) const;
 
 	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
-		float GetAngleSpeed(const FRotator Tilt) const;
+		float GetAngleSpeed(const float Tilt) const;
 
 	UFUNCTION(BlueprintPure, Category = "Character Movement|Speed")
-		float GetAccelerationRate(const FRotator Tilt) const;
+		float GetAccelerationRate(const float Tilt) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Character Movement|Speed")
-		void UpdateSpeed(float NewSpeed, float NewAccelerationRate);
+		void UpdateSpeed(float NewSpeed, float NewAccelerationRate, const FRotator Tilt);
 
-	UFUNCTION(BlueprintCallable, Category = "Snowboard Movement|Alignement")
-		FVector LineTrace(FVector Start, FVector End);
-
-	UFUNCTION(BlueprintCallable, Category = "Snowboard Movement|Alignement")
+	UFUNCTION(BlueprintCallable, Category = "Snowboard|Alignement")
 		FRotator AlignBoard();
 
+	UFUNCTION(BlueprintCallable, Category = "Snowboard|Alignements")
+		void CheckGround();
+
 public:
+	UFUNCTION(BlueprintPure, Category = "Character Movement|Movement Mode")
+		bool IsFlying() const { return GetCharacterMovement()->MovementMode == MOVE_Flying; }
 
 };
