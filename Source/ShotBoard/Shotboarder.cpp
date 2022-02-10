@@ -14,7 +14,7 @@ AShotboarder::AShotboarder()
 	bReplicates = true;
 	SetReplicates(true);
 	SetReplicateMovement(true);
-
+	
 	SnowboardComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SnowboardMesh"));
 	SnowboardComponent->SetupAttachment(RootComponent);
 
@@ -52,11 +52,8 @@ void AShotboarder::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("Forward", IE_Pressed, this, &AShotboarder::MoveForward);
-
-	// PlayerInputComponent->BindAxis("Forward", this, &AShotboarder::MoveForward);
+	PlayerInputComponent->BindAxis("Forward", this, &AShotboarder::MoveForward);
 	PlayerInputComponent->BindAxis("Right", this, &AShotboarder::TurnRight);
-
 	PlayerInputComponent->BindAxis("Turn", this, &AShotboarder::CameraTurn);
 	PlayerInputComponent->BindAxis("LookUp", this, &AShotboarder::CameraUp);
 
@@ -64,11 +61,15 @@ void AShotboarder::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 
 // Added
-void AShotboarder::MoveForward(/*float AxisValue*/)
+void AShotboarder::MoveForward(float AxisValue)
 {
-	// GetCharacterMovement()->AddImpulse(SnowboardComponent->GetForwardVector() * 10000);
-
-	// AddMovementInput(SnowboardComponent->GetForwardVector(), /*ForwardMomentum*/AxisValue);
+	if (AxisValue > 0)
+	{
+		Crouch(true);
+	}
+	else {
+		UnCrouch(true);
+	}
 	
 }
 
@@ -118,7 +119,7 @@ void AShotboarder::UpdateSpeed(float NewSpeed, float NewAccelerationRate, const 
 {
 	if (IsFlying())
 	{
-		AddMovementInput(DirectionMomentum, AirMomentum, true);
+		AddMovementInput(DirectionMomentum, AirMomentum, false);
 		// AddMovementInput(FVector(0.f, 0.f, -1.f), 10.f, true);
 
 		DirectionMomentum -= FVector(0.f, 0.f, GetWorld()->GetDeltaSeconds());

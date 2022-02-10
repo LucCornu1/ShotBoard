@@ -1,8 +1,12 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+[0.0.8] - 10/02-2022 - LucC
+### Added
+- Ajout de la fonctionnalité d'accroupissement pour gagner de la vitesse
+
 ##[0.0.7] - 31-01-2022 - LucC
-###Added
+### Added
 - Ajout de la gravité lors du saut
 
 ##[0.0.6] - 31-01-2022 - LucC

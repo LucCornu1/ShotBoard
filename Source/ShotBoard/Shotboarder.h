@@ -35,13 +35,14 @@ public:
 
 // Variables
 private:
+	float AirMomentum;
 	float AngleSpeed;
 	UArrowComponent* ArrowComponent = GetArrowComponent();
+	// bool bCrouched;
 	bool bForward;
+	FVector DirectionMomentum;
 	float ForwardMomentum;
 	float PreviousSpeed;
-	FVector DirectionMomentum;
-	float AirMomentum;
 
 protected:
 	/** The variable for the speed at which the character turns */
@@ -76,9 +77,10 @@ public:
 
 // Functions
 private:
+
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Character Movement")
-		void MoveForward(/*float AxisValue*/);
+		void MoveForward(float AxisValue);
 
 	UFUNCTION(BlueprintCallable, Category = "Character Movement")
 		void TurnRight(float AxisValue);
