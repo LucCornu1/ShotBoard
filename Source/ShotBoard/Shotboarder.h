@@ -1,9 +1,10 @@
-// Code by Luc Cornu & Gaëtan Piou.
+// Code by Luc Cornu
 
 
 #pragma once
 
 #include "Components/ArrowComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -37,7 +38,7 @@ public:
 private:
 	float AirMomentum;
 	float AngleSpeed;
-	UArrowComponent* ArrowComponent = GetArrowComponent();
+	USkeletalMeshComponent* CharacterMeshComponent = GetMesh();
 	// bool bCrouched;
 	bool bForward;
 	FVector DirectionMomentum;

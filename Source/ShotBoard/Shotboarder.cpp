@@ -1,4 +1,4 @@
-// Code by Luc Cornu & Gaëtan Piou.
+// Code by Luc Cornu
 
 
 #include "DrawDebugHelpers.h"
@@ -137,7 +137,7 @@ void AShotboarder::UpdateSpeed(float NewSpeed, float NewAccelerationRate, const 
 
 FRotator AShotboarder::AlignBoard()
 {
-	FVector Start = ArrowComponent->GetComponentLocation();
+	FVector Start = CharacterMeshComponent->GetComponentLocation();
 	FVector End = UKismetMathLibrary::TransformLocation(GetActorTransform(),FVector(0.f, 0.f, -150.f));
 	FHitResult OutHit;
 	FCollisionQueryParams Params;
@@ -173,7 +173,7 @@ FRotator AShotboarder::AlignBoard()
 
 void AShotboarder::CheckGround()
 {
-	FVector Start = ArrowComponent->GetComponentLocation();
+	FVector Start = CharacterMeshComponent->GetComponentLocation();
 	FVector End = UKismetMathLibrary::TransformLocation(GetActorTransform(), FVector(125.f, 0.f, -125.f));
 	FHitResult OutHit;
 	FCollisionQueryParams Params;
