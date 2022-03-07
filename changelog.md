@@ -1,6 +1,11 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.0.10] - 07-03-2022 - LucC
+### Added
+- "CreateServer"
+- "FindServer"
+
 ##[0.0.9] - 03-03-2022 - LucC
 ### Added
 - API Steam à l'aide du plugin "Online Subsystem Steam"
