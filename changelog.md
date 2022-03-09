@@ -1,7 +1,31 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
-[0.0.8] - 10/02-2022 - LucC
+##[0.0.11] - 09-03-2022 - LucC & JoffreyZ
+### Added
+- Création d'une session fonctionnant en LAN
+- D'autres joueurs peuvent rejoindre en LAN la session créée
+- Lorsque le joueur arrive au bout de la piste, il est téléporter en haut de la piste
+
+### Changed
+- Ajout des commentaires au code
+
+### Removed
+- Le mode "Online" avec STEAM OSS, en raison d'un bug connu avec l'AppID 480
+
+##[0.0.10] - 07-03-2022 - LucC
+### Added
+- "CreateServer"
+- "FindServer"
+
+##[0.0.9] - 03-03-2022 - LucC
+### Added
+- API Steam à l'aide du plugin "Online Subsystem Steam"
+
+### BugFix
+- Changement du point d'origine du Linetrace pour l'alignement du snowboard
+
+##[0.0.8] - 10-02-2022 - LucC
 ### Added
 - Ajout de la fonctionnalité d'accroupissement pour gagner de la vitesse
 
