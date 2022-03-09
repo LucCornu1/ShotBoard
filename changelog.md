@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Création d'une session fonctionnant en LAN
 - D'autres joueurs peuvent rejoindre en LAN la session créée
+- Lorsque le joueur arrive au bout de la piste, il est téléporter en haut de la piste
+
+### Changed
+- Ajout des commentaires au code
 
 ### Removed
 - Le mode "Online" avec STEAM OSS, en raison d'un bug connu avec l'AppID 480
