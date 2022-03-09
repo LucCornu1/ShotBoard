@@ -1,6 +1,14 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.0.11] - 09-03-2022 - LucC & JoffreyZ
+### Added
+- Création d'une session fonctionnant en LAN
+- D'autres joueurs peuvent rejoindre en LAN la session créée
+
+### Removed
+- Le mode "Online" avec STEAM OSS, en raison d'un bug connu avec l'AppID 480
+
 ##[0.0.10] - 07-03-2022 - LucC
 ### Added
 - "CreateServer"
