@@ -1,6 +1,11 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.0.12] - 17-03-2022 - LucC
+### Added
+- Les calculs s'effectuent désormais du côté serveur, puis sont dupliqués côté client, qui ajoute la vitesse
+- Duplication de la rotation du joueur
+
 ##[0.0.11] - 09-03-2022 - LucC & JoffreyZ
 ### Added
 - Création d'une session fonctionnant en LAN

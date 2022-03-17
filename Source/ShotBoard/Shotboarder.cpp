@@ -4,6 +4,7 @@
 #include "Shotboarder.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AShotboarder::AShotboarder()
@@ -31,6 +32,9 @@ void AShotboarder::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (IsValid(SpeedCurve))
+		MaxSpeed = SpeedCurve->GetFloatValue(-100);
+
 }
 
 // Called every frame
@@ -38,12 +42,8 @@ void AShotboarder::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FRotator GroundTilt = AlignBoard();
-	if (CheckUpdateSpeed(GroundTilt.Pitch) || IsFlying())
-	{
-		UpdateSpeed(GetAngleSpeed(GroundTilt.Pitch), GetAccelerationRate(GroundTilt.Pitch), GroundTilt);
-		CheckGround();
-	}
+	ServerSync();
+	AddMovementInput(FRep.CharacterDirection, FRep.CharacterSpeed, true); // Apply the speed in the direction of the slope
 
 }
 
@@ -56,6 +56,14 @@ void AShotboarder::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAxis("Right", this, &AShotboarder::TurnRight);
 	PlayerInputComponent->BindAxis("Turn", this, &AShotboarder::CameraTurn);
 	PlayerInputComponent->BindAxis("LookUp", this, &AShotboarder::CameraUp);
+
+}
+
+void AShotboarder::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AShotboarder, FRep);
 
 }
 
@@ -77,7 +85,7 @@ void AShotboarder::MoveForward(float AxisValue)
 void AShotboarder::TurnRight(float AxisValue)
 // Goal : Make the player turn if the right key or left key is pressed
 {
-	AddActorLocalRotation(FRotator(0.f, 1000.f, 0.f) * AxisValue * TurnAlpha * GetWorld()->GetDeltaSeconds()); // Turn the player character
+	RotationSync(AxisValue);
 
 }
 
@@ -129,21 +137,24 @@ void AShotboarder::UpdateSpeed(float NewSpeed, float NewAccelerationRate, const 
 {
 	if (IsFlying()) // If player is flying, apply corresponding momentum
 	{
-		AddMovementInput(DirectionMomentum, AirMomentum, false); // Apply the Momentum in the right direction
-		// AddMovementInput(FVector(0.f, 0.f, -1.f), 10.f, true);
-
+		NewSpeed = FMath::Clamp(AirMomentum, 0.f, MaxSpeed);
 		DirectionMomentum -= FVector(0.f, 0.f, GetWorld()->GetDeltaSeconds()); // Apply gravity to make the player fall
 		DirectionMomentum.Normalize(1.f);
 	}
 	else { // Else apply normal movement
-		NewSpeed = FMath::FInterpTo(PreviousSpeed, NewSpeed, GetWorld()->GetDeltaSeconds(), NewAccelerationRate); // Interp the new speed with the previous one based on the acceleration of the character
+		NewSpeed = FMath::FInterpTo(FRep.CharacterSpeed, NewSpeed, GetWorld()->GetDeltaSeconds(), NewAccelerationRate); // Interp the new speed with the previous one based on the acceleration of the character
 		// --> Used to apply a slow acceleration at the start, which then increases
-		bool bTilt = Tilt == FRotator(0.f, 0.f, 0.f);
+		// bool bTilt = Tilt == FRotator(0.f, 0.f, 0.f);
 
-		AddMovementInput(GetActorForwardVector(), NewSpeed, true); // Apply the speed in the direction of the slope
-		PreviousSpeed = NewSpeed; // Store the previous speed
+		DirectionMomentum = GetActorForwardVector();
 	}
 
+	FRep.CharacterDirection = DirectionMomentum;
+	FRep.CharacterSpeed = NewSpeed; // Store the previous speed
+
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Speed %f"), FRep.CharacterSpeed));
+	
 }
 
 FRotator AShotboarder::AlignBoard()
@@ -213,4 +224,34 @@ void AShotboarder::CheckGround()
 		}
 	}
 	
+}
+
+
+// Replication
+void AShotboarder::ServerSync_Implementation()
+// Goal : Update the player character on the server, and then replicate all the variables to the
+{
+	FRotator GroundTilt = AlignBoard();
+	if (CheckUpdateSpeed(GroundTilt.Pitch) || IsFlying())
+	{
+		UpdateSpeed(GetAngleSpeed(GroundTilt.Pitch), GetAccelerationRate(GroundTilt.Pitch), GroundTilt);
+		CheckGround();
+	}
+
+}
+
+void AShotboarder::RotationSync_Implementation(float AxisValue)
+{
+	AddActorLocalRotation(FRotator(0.f, 1000.f, 0.f) * AxisValue * TurnAlpha * GetWorld()->GetDeltaSeconds()); // Turn the player character
+
+	// Replication
+	FRep.CharacterRotation = GetActorRotation();
+
+}
+
+void AShotboarder::ClientReplication_Implementation()
+{
+	if (GetActorRotation() != FRep.CharacterRotation)
+		SetActorRotation(FRep.CharacterRotation);
+
 }

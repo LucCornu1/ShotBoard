@@ -12,6 +12,22 @@
 #include "GameFramework/Character.h"
 #include "Shotboarder.generated.h"
 
+USTRUCT(BlueprintType)
+struct FReplicate
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "Replication|Character")
+		FRotator CharacterRotation;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Replication|Character|Movement")
+		FVector CharacterDirection;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Replication|Character|Movement")
+		float CharacterSpeed;
+
+};
+
 /**
 The class for the player character of ShotBoard
 */
@@ -40,13 +56,13 @@ public:
 // Variables
 private:
 	float AirMomentum;
-	float AngleSpeed;
 	USkeletalMeshComponent* CharacterMeshComponent = GetMesh();
-	// bool bCrouched;
-	bool bForward;
 	FVector DirectionMomentum;
-	float ForwardMomentum;
-	float PreviousSpeed;
+
+	UPROPERTY(Replicated, ReplicatedUsing = "ClientReplication")
+		FReplicate FRep;
+
+	float MaxSpeed;
 
 protected:
 	/** The variable for the speed at which the character turns */
@@ -131,5 +147,17 @@ public:
 	/** Return true if the player is flying */
 	UFUNCTION(BlueprintPure, Category = "Character Movement|Movement Mode")
 		bool IsFlying() const { return GetCharacterMovement()->MovementMode == MOVE_Flying; }
+
+
+// Replication
+private:
+	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Replication|Server")
+		void ServerSync();
+
+	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Replication|Server")
+		void RotationSync(float AxisValue);
+
+	UFUNCTION(BlueprintCallable, Client, Reliable, Category = "Replication|Client")
+		void ClientReplication();
 
 };
