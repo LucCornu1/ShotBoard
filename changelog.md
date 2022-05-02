@@ -1,6 +1,10 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.0.13] - 02-05-2022 - LucC
+### Added
+- Des assets graphiques
+
 ##[0.0.12] - 17-03-2022 - LucC
 ### Added
 - Les calculs s'effectuent désormais du côté serveur, puis sont dupliqués côté client, qui ajoute la vitesse

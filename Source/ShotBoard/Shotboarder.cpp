@@ -152,8 +152,8 @@ void AShotboarder::UpdateSpeed(float NewSpeed, float NewAccelerationRate, const 
 	FRep.CharacterDirection = DirectionMomentum;
 	FRep.CharacterSpeed = NewSpeed; // Store the previous speed
 
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Speed %f"), FRep.CharacterSpeed));
+//	if (GEngine)
+//		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Speed %f"), FRep.CharacterSpeed));
 	
 }
 
