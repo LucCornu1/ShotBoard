@@ -85,6 +85,8 @@ void AShotboarder::MoveForward(float AxisValue)
 void AShotboarder::TurnRight(float AxisValue)
 // Goal : Make the player turn if the right key or left key is pressed
 {
+	/*if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, FString::Printf(TEXT("AxisValue %f"), AxisValue));*/
 	RotationSync(AxisValue);
 
 }
