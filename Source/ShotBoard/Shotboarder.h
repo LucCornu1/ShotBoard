@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "SnowboardMovement.h"
 #include "Components/ArrowComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Camera/CameraComponent.h"
@@ -93,6 +94,10 @@ public:
 	/** The Camera component attached to the spring arm */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Components")
 		UCameraComponent* CameraComponent;
+
+	/** Test on actor component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Components")
+		USnowboardMovement* SnowboardMovement;
 
 	/** If checked, show the debug lines (line trace) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
