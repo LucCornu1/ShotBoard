@@ -25,8 +25,9 @@ AShotboarder::AShotboarder()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
-	SnowboardMovement = CreateDefaultSubobject<USnowboardMovement>(TEXT("SnowboardMovement"));
+	SnowboardMovement = CreateDefaultSubobject<USnowboardMovementComponent>(TEXT("SnowboardMovement"));
 	this->AddOwnedComponent(SnowboardMovement);
+	SnowboardMovement->SetPawnOwner(this);
 
 }
 

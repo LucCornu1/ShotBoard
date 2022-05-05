@@ -1,6 +1,11 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.0.15] - 05-05-2022
+### Changed
+- Rework en cours de la physique du joueur
+	- Gravité ajoutée (incomplète)
+
 ##[0.0.14] - 03-05-2022
 ### Changed
 - Le level de test est modifié pour ajouter une partie à bosse sur la pente lisse

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "SnowboardMovement.h"
+#include "SnowboardMovementComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Camera/CameraComponent.h"
@@ -97,7 +97,7 @@ public:
 
 	/** Test on actor component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Components")
-		USnowboardMovement* SnowboardMovement;
+		USnowboardMovementComponent* SnowboardMovement;
 
 	/** If checked, show the debug lines (line trace) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
