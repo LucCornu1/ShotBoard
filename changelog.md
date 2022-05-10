@@ -1,6 +1,10 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.0.16] - 10-05-2022
+### Added
+- Rotation de la planche sur la pente
+
 ##[0.0.15] - 05-05-2022
 ### Changed
 - Rework en cours de la physique du joueur
