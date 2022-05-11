@@ -1,6 +1,10 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.0.17] - 11-05-2022
+### Added
+- La planche se déplace en fonction de la pente
+
 ##[0.0.16] - 10-05-2022
 ### Added
 - Rotation de la planche sur la pente
