@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - La planche se déplace en fonction de la pente
 
+### BugFix
+- La planche ne s'arrête plus au moindre dénivelé
+
 ##[0.0.16] - 10-05-2022
 ### Added
 - Rotation de la planche sur la pente
