@@ -1,6 +1,10 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.1.0] - 15-05-2022
+### Changed
+- Tout
+
 ##[0.0.18] - 12-05-2022
 ### Changed
 - Le calucl de la vitesse
