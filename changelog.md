@@ -1,13 +1,23 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.1.1] - 15-05-2022
+### Added
+- Controles :
+	- Virage avec le Joystick gauche ou Q/D
+	- Déccélération avec la touche B (manette) ou S (clavier)
+	- Saut avec la touche A (manette) ou espace (clavier)
+
+### Tests
+- Tests effectués sur les tremplins (bug)
+
 ##[0.1.0] - 15-05-2022
 ### Changed
 - Tout
 
 ##[0.0.18] - 12-05-2022
 ### Changed
-- Le calucl de la vitesse
+- Le calcul de la vitesse
 
 ##[0.0.17] - 11-05-2022
 ### Added
