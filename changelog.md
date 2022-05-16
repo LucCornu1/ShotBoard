@@ -1,6 +1,13 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.1.2] - 16-05-2022
+### Added
+- Controles :
+	- Rotation latérale en l'air avec le Joystick droit ou A/E
+- Première version d'un level design
+- Mise en place d'un "foliage brush" pour les arbres et les plantes
+
 ##[0.1.1] - 15-05-2022
 ### Added
 - Controles :
