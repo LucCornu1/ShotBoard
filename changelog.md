@@ -1,6 +1,47 @@
 # Changelog - ShotBoard
 All notable changes to this project will be documented in this file.
 
+##[0.1.2] - 16-05-2022
+### Added
+- Controles :
+	- Rotation latérale en l'air avec le Joystick droit ou A/E
+- Première version d'un level design
+- Mise en place d'un "foliage brush" pour les arbres et les plantes
+
+##[0.1.1] - 15-05-2022
+### Added
+- Controles :
+	- Virage avec le Joystick gauche ou Q/D
+	- Déccélération avec la touche B (manette) ou S (clavier)
+	- Saut avec la touche A (manette) ou espace (clavier)
+
+### Tests
+- Tests effectués sur les tremplins (bug)
+
+##[0.1.0] - 15-05-2022
+### Changed
+- Tout
+
+##[0.0.18] - 12-05-2022
+### Changed
+- Le calcul de la vitesse
+
+##[0.0.17] - 11-05-2022
+### Added
+- La planche se déplace en fonction de la pente
+
+### BugFix
+- La planche ne s'arrête plus au moindre dénivelé
+
+##[0.0.16] - 10-05-2022
+### Added
+- Rotation de la planche sur la pente
+
+##[0.0.15] - 05-05-2022
+### Changed
+- Rework en cours de la physique du joueur
+	- Gravité ajoutée (incomplète)
+
 ##[0.0.14] - 03-05-2022
 ### Changed
 - Le level de test est modifié pour ajouter une partie à bosse sur la pente lisse
